@@ -6,7 +6,7 @@
 /*   By: lucmansa <lucmansa@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/27 16:43:37 by lucmansa          #+#    #+#             */
-/*   Updated: 2025/04/04 12:01:09 by lucmansa         ###   ########.fr       */
+/*   Updated: 2025/04/04 15:13:19 by lucmansa         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -72,8 +72,6 @@ void	*main_guard(void *arg)
 
 	philo = arg;
 	i = 0;
-	//pthread_mutex_lock(&philo[0].context->init);
-	//pthread_mutex_unlock(&philo[0].context->init);
 	while (!is_dead(philo))
 	{
 		if (i >= philo->context->philo_nb)
@@ -173,13 +171,13 @@ int	main(int argc, char **argv)
 	context.time_sleep= ft_atoi(argv[4]);
 	context.fork = malloc(context.philo_nb * sizeof(pthread_mutex_t));
 	philo = malloc(context.philo_nb * sizeof(t_philo));
-	pthread_mutex_init(&context.init, NULL);
 	pthread_mutex_init(&context.print, NULL);
 	pthread_mutex_init(&context.mutex_die, NULL);
 	i = -1;
 	gettimeofday(&context.time_start, NULL);
 	while (++i < context.philo_nb)
 	{
+		printf("init %i\n", i);
 		philo[i].context = &context;
 		philo[i].id = i;
 		pthread_mutex_init(&context.fork[i], NULL);
