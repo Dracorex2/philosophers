@@ -6,7 +6,7 @@
 /*   By: lucmansa <lucmansa@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/27 17:15:36 by lucmansa          #+#    #+#             */
-/*   Updated: 2025/04/01 17:24:44 by lucmansa         ###   ########.fr       */
+/*   Updated: 2025/04/04 11:59:24 by lucmansa         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,15 +20,10 @@
 # include <stdlib.h>
 # include <sys/time.h>
 
-typedef struct s_fork
-{
-	pthread_mutex_t	fork;
-}	t_fork;
-
 typedef struct s_context
 {
 	int				philo_nb;
-	t_fork			*fork;
+	pthread_mutex_t	*fork;
 	int				time_death;
 	int				time_eat;
 	int				time_sleep;
@@ -44,8 +39,8 @@ typedef struct s_philo
 	t_context		*context;
 	int				id;
 	pthread_t		thread;
-	struct timeval	last_eat;
 	pthread_mutex_t	last_eat_m;
+	struct timeval	last_eat;
 	int				think;
 }	t_philo;
 
