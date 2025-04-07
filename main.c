@@ -6,7 +6,7 @@
 /*   By: lucmansa <lucmansa@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/27 16:43:37 by lucmansa          #+#    #+#             */
-/*   Updated: 2025/04/04 15:13:19 by lucmansa         ###   ########.fr       */
+/*   Updated: 2025/04/07 19:15:00 by lucmansa         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -33,10 +33,11 @@ int	ft_atoi(const char *nptr)
 
 int	is_dead(t_philo *philo)
 {
-	int dead = 0;
+	int dead;
+
+	dead  = 0;
 	pthread_mutex_lock(&philo->context->mutex_die);
-	if (philo->context->die)
-		dead = 1;
+	dead = philo->context->die;
 	pthread_mutex_unlock(&philo->context->mutex_die);
 	return dead;
 }
@@ -64,44 +65,70 @@ int	print(t_philo *philo, char *str)
 	return (0);
 }
 
+int	check_eat(t_philo *philo, int i)
+{
+	pthread_mutex_lock(&philo->mutex_eat_count);
+	if (i == 1)
+		philo->eat_count++;
+	else
+	{
+		if (philo->as_count && philo->eat_count >= philo->context->nb_eat)
+			return (pthread_mutex_unlock(&philo->mutex_eat_count), 1);
+	}
+	pthread_mutex_unlock(&philo->mutex_eat_count);
+	return (0);
+}
+
+int	check_all_eat(t_philo *philo)
+{
+	int	i;
+
+	i = -1;
+	while (++i < philo->context->philo_nb)
+		if (check_eat(&philo[i], 0))
+			return (0);
+	return (1);
+}
+
 void	*main_guard(void *arg)
 {
 	int				i;
 	struct	timeval	actual_time;
-	t_philo *philo;
+	t_philo *philos;
 
-	philo = arg;
-	i = 0;
-	while (!is_dead(philo))
+	philos = arg;
+	i = -1;
+	while (!is_dead(philos) && check_all_eat(philos))
 	{
-		if (i >= philo->context->philo_nb)
+		if (++i >= philos->context->philo_nb)
 			i = 0;
-		pthread_mutex_lock(&philo[i].last_eat_m);
+		if (check_eat(&philos[i], 0))
+			break ;
+		pthread_mutex_lock(&philos[i].eat_mutex);
 		gettimeofday(&actual_time, NULL);
-		if (get_time(philo[i].last_eat) > philo->context->time_death)
+		if (get_time(philos[i].last_eat) > philos->context->time_death)
 		{
-			print(&philo[i], "died");
-			pthread_mutex_lock(&philo->context->mutex_die);
-			philo->context->die = 1;
-			pthread_mutex_unlock(&philo->context->mutex_die);
+			print(&philos[i], "died");
+			pthread_mutex_lock(&philos->context->mutex_die);
+			philos->context->die = 1;
+			pthread_mutex_unlock(&philos->context->mutex_die);
 		}
-		pthread_mutex_unlock(&philo[i].last_eat_m);
-		i++;
+		pthread_mutex_unlock(&philos[i].eat_mutex);
+		usleep(1);
 	}
 	return (NULL);
 }
 
 int	wait(t_philo *philo, int i)
 {
-	struct	timeval	actual_time;
 	struct	timeval	start_time;
 
 	gettimeofday(&start_time, NULL);
-	actual_time = start_time;
-	while (((actual_time.tv_sec * 1000) + (actual_time.tv_usec / 1000)) -
-		((start_time.tv_sec * 1000) + (start_time.tv_usec / 1000)) < i)
+	while (1)
 	{
-		gettimeofday(&actual_time, NULL);
+		if (get_time(start_time) >= i)
+			return (0);
+		usleep(1);
 		if (is_dead(philo))
 			return (1);
 	}
@@ -111,15 +138,22 @@ int	wait(t_philo *philo, int i)
 int	eat(t_philo *philo, int n, int b)
 {
 	pthread_mutex_lock(&philo->context->fork[n]);
+	if (print(philo, "has taken a fork"))
+		return (pthread_mutex_unlock(&philo->context->fork[n]), 1);
+	if (philo->context->philo_nb == 1)
+		return (pthread_mutex_unlock(&philo->context->fork[n]), 1);
 	pthread_mutex_lock(&philo->context->fork[b]);
-	pthread_mutex_lock(&philo->last_eat_m);
+	if (print(philo, "has taken a fork"))
+		return (pthread_mutex_unlock(&philo->context->fork[n]), pthread_mutex_unlock(&philo->context->fork[b]), 1);
+	pthread_mutex_lock(&philo->eat_mutex);
 	gettimeofday(&philo->last_eat, NULL);
-	pthread_mutex_unlock(&philo->last_eat_m);
+	pthread_mutex_unlock(&philo->eat_mutex);
 	if (print(philo, "is eating"))
 		return (pthread_mutex_unlock(&philo->context->fork[n]), pthread_mutex_unlock(&philo->context->fork[b]), 1);
 	wait(philo, philo->context->time_eat);
-	pthread_mutex_unlock(&philo->context->fork[n]);
+	check_eat(philo, 1);
 	pthread_mutex_unlock(&philo->context->fork[b]);
+	pthread_mutex_unlock(&philo->context->fork[n]);
 	return (0);
 }
 
@@ -128,65 +162,80 @@ void	*main_philo(void *arg)
 	t_philo *philo;
 	int		fork_r;
 	int		fork_l;
-	
+
 	philo = (t_philo *)arg;
 	fork_l = philo->id;
 	fork_r = philo->id + 1;
 	if (philo->id == philo->context->philo_nb - 1)
 		fork_r = 0;
-	gettimeofday(&philo->last_eat, NULL);
-	while (1)
+	while (!is_dead(philo) && !check_eat(philo, 0))
 	{
 		if (print(philo, "is thinking"))
 			break;
-		if (philo->id % 2)
-		{
-			if (eat(philo, fork_l, fork_r))
-				break;
-		}
-		else
-		{
-			if (eat(philo, fork_r, fork_l))
-				break;
-		}
-		if (print(philo, "is sleeping"))
+		if (philo->id % 2 && eat(philo, fork_l, fork_r))
 			break;
-		if (wait(philo, philo->context->time_sleep))
+		else if (!(philo->id % 2) && eat(philo, fork_r, fork_l))
+			break;
+		if (!print(philo, "is sleeping") && wait(philo, philo->context->time_sleep))
 			break;
 	}
 	return (NULL);
 }
 
+int	create_philos(t_philo *philo, t_context *context)
+{
+	int	i;
+	pthread_t	guard;
+
+	i = -1;
+	while (++i < context->philo_nb)
+	{
+		philo[i].context = context;
+		philo[i].id = i;
+		philo[i].eat_count = 0;
+		philo[i].as_count = 0;
+		if (philo[i].context->nb_eat)
+			philo[i].as_count = 1;
+		gettimeofday(&philo[i].last_eat, NULL);
+		pthread_mutex_init(&context->fork[i], NULL);
+		pthread_mutex_init(&philo[i].eat_mutex, NULL);
+		pthread_mutex_init(&philo[i].mutex_eat_count, NULL);
+	}
+	i = -1;
+	while (++i < context->philo_nb)
+		pthread_create(&philo[i].thread, NULL, main_philo, &philo[i]);
+	pthread_create(&guard, NULL, main_guard, philo);
+	i = -1;
+	while (++i < context->philo_nb)
+		pthread_join(philo[i].thread, NULL);
+	pthread_join(guard, NULL);
+	return (0);
+}
+
 int	main(int argc, char **argv)
 {
 	t_context 	context;
-	int			i;
 	t_philo		*philo;
-	pthread_t	guard;
 
-	memset(&context, 0, sizeof(t_context));
+	if (argc < 5)
+		return (0);
+	context.die = 0;
 	context.philo_nb = ft_atoi(argv[1]);
 	context.time_death = ft_atoi(argv[2]);
 	context.time_eat = ft_atoi(argv[3]);
-	context.time_sleep= ft_atoi(argv[4]);
+	context.time_sleep = ft_atoi(argv[4]);
+	context.nb_eat = 0;
+	if (context.philo_nb < 1 || context.time_death < 1 || context.time_eat < 1 || context.time_sleep < 1)
+		return (0);
 	context.fork = malloc(context.philo_nb * sizeof(pthread_mutex_t));
 	philo = malloc(context.philo_nb * sizeof(t_philo));
+	if (argc > 5)
+		context.nb_eat = ft_atoi(argv[5]);
 	pthread_mutex_init(&context.print, NULL);
 	pthread_mutex_init(&context.mutex_die, NULL);
-	i = -1;
 	gettimeofday(&context.time_start, NULL);
-	while (++i < context.philo_nb)
-	{
-		printf("init %i\n", i);
-		philo[i].context = &context;
-		philo[i].id = i;
-		pthread_mutex_init(&context.fork[i], NULL);
-		pthread_mutex_init(&philo[i].last_eat_m, NULL);
-		pthread_create(&philo[i].thread, NULL, main_philo, &philo[i]);
-	}
-	pthread_create(&guard, NULL, main_guard, philo);
-	i = -1;
-	while (++i < context.philo_nb)
-		pthread_join(philo[i].thread, NULL);
-	pthread_join(guard, NULL);
+	create_philos(philo, &context);
+	free(philo);
+	free(context.fork);
+	return (0);
 }

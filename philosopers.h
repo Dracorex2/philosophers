@@ -6,7 +6,7 @@
 /*   By: lucmansa <lucmansa@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/27 17:15:36 by lucmansa          #+#    #+#             */
-/*   Updated: 2025/04/04 11:59:24 by lucmansa         ###   ########.fr       */
+/*   Updated: 2025/04/07 19:01:11 by lucmansa         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -27,10 +27,11 @@ typedef struct s_context
 	int				time_death;
 	int				time_eat;
 	int				time_sleep;
+	int				nb_eat;
 	struct timeval	time_start;
 	pthread_mutex_t	print;
-	pthread_mutex_t	init;
 	int				die;
+	int				end;
 	pthread_mutex_t	mutex_die;
 }	t_context;
 
@@ -39,9 +40,11 @@ typedef struct s_philo
 	t_context		*context;
 	int				id;
 	pthread_t		thread;
-	pthread_mutex_t	last_eat_m;
+	pthread_mutex_t	eat_mutex;
+	pthread_mutex_t	mutex_eat_count;
 	struct timeval	last_eat;
-	int				think;
+	int 			as_count;
+	int				eat_count;
 }	t_philo;
 
 #endif
