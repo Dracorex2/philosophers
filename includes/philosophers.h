@@ -6,7 +6,7 @@
 /*   By: lucmansa <lucmansa@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/08 15:13:09 by lucmansa          #+#    #+#             */
-/*   Updated: 2025/04/08 15:31:43 by lucmansa         ###   ########.fr       */
+/*   Updated: 2025/04/10 17:34:39 by lucmansa         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -58,7 +58,7 @@ int		eat(t_philo *philo, int n, int b);
 void	create_philos(t_philo *philo, t_context *context);
 void	*main_philo(void *arg);
 
-int		ft_atoi(const char *nptr);
+int		ft_atoi(char *nptr);
 int		print(t_philo *philo, char *str);
 int		get_time(struct	timeval time);
 #endif

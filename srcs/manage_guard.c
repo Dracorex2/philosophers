@@ -6,7 +6,7 @@
 /*   By: lucmansa <lucmansa@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/08 14:37:11 by lucmansa          #+#    #+#             */
-/*   Updated: 2025/04/08 15:33:18 by lucmansa         ###   ########.fr       */
+/*   Updated: 2025/04/10 17:23:37 by lucmansa         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -32,7 +32,7 @@ int	check_eat(t_philo *philo, int i)
 		philo->eat_count++;
 	else
 	{
-		if (philo->as_count && philo->eat_count >= philo->context->nb_eat)
+		if (philo->as_count && philo->eat_count > philo->context->nb_eat)
 			return (pthread_mutex_unlock(&philo->mutex_eat_count), 1);
 	}
 	pthread_mutex_unlock(&philo->mutex_eat_count);

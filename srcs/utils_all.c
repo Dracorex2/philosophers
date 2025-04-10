@@ -6,13 +6,27 @@
 /*   By: lucmansa <lucmansa@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/08 14:38:08 by lucmansa          #+#    #+#             */
-/*   Updated: 2025/04/08 15:18:25 by lucmansa         ###   ########.fr       */
+/*   Updated: 2025/04/10 17:36:25 by lucmansa         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "philosophers.h"
 
-int	ft_atoi(const char *nptr)
+
+int	ft_isdigit(char *nb)
+{
+	int	i;
+
+	i = -1;
+	while (nb[++i])
+	{
+		if (nb[i] < '0' || nb[i] > '9');
+			return (1);
+	}
+	return (0);
+}
+
+int	ft_atoi(char *nptr)
 {
 	int	nbr;
 	int	i;
@@ -21,6 +35,8 @@ int	ft_atoi(const char *nptr)
 	nbr = 0;
 	i = 0;
 	sign = 1;
+	if (ft_isdigit(nptr))
+		return (0);
 	while (nptr[i] == ' ' || (nptr[i] >= '\t' && nptr[i] <= '\r'))
 		i++;
 	if (nptr[i] == '-' || nptr[i] == '+')
