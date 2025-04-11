@@ -6,7 +6,7 @@
 /*   By: lucmansa <lucmansa@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/08 14:34:27 by lucmansa          #+#    #+#             */
-/*   Updated: 2025/04/10 17:25:14 by lucmansa         ###   ########.fr       */
+/*   Updated: 2025/04/11 14:31:11 by lucmansa         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -64,7 +64,7 @@ void	create_philos(t_philo *philo, t_context *context)
 		philo[i].id = i;
 		philo[i].eat_count = 0;
 		philo[i].as_count = 0;
-		if (philo[i].context->nb_eat >= 0)
+		if (philo[i].context->nb_eat > 0)
 			philo[i].as_count = 1;
 		gettimeofday(&philo[i].last_eat, NULL);
 		pthread_mutex_init(&context->fork[i], NULL);

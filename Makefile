@@ -6,7 +6,7 @@
 #    By: lucmansa <lucmansa@student.42.fr>          +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2025/04/08 14:46:08 by lucmansa          #+#    #+#              #
-#    Updated: 2025/04/08 15:04:45 by lucmansa         ###   ########.fr        #
+#    Updated: 2025/04/11 14:38:32 by lucmansa         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -26,7 +26,7 @@ $(NAME) : $(OBJECTS)
 	$(CC) $(FLAGS) $(OBJECTS) -o $(NAME)
 
 %.o: %.c
-		$(CC) $(CFLAGS) -c $< -o $@ -I $(INC_DIR)
+		$(CC) $(FLAGS) -c $< -o $@ -I $(INC_DIR)
 
 clean:
 		rm -rf $(OBJECTS)
