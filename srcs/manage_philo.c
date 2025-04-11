@@ -6,7 +6,7 @@
 /*   By: lucmansa <lucmansa@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/08 14:34:27 by lucmansa          #+#    #+#             */
-/*   Updated: 2025/04/11 14:31:11 by lucmansa         ###   ########.fr       */
+/*   Updated: 2025/04/11 15:39:00 by lucmansa         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -71,6 +71,7 @@ void	create_philos(t_philo *philo, t_context *context)
 		pthread_mutex_init(&philo[i].eat_mutex, NULL);
 		pthread_mutex_init(&philo[i].mutex_eat_count, NULL);
 	}
+	gettimeofday(&philo->context->time_start, NULL);
 	i = -1;
 	while (++i < context->philo_nb)
 		pthread_create(&philo[i].thread, NULL, main_philo, &philo[i]);
